@@ -1,0 +1,23 @@
+{
+    "name": "mariusbuescher/node-composer",
+    "type": "composer-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marius Büscher",
+            "email": "marius.buescher@gmx.de"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MariusBuescher\\NodeComposer\\": "src/"
+        }
+    },
+    "require": {
+        "composer/composer": "^1.4",
+        "composer-plugin-api": "^1.1"
+    },
+    "extra": {
+        "class": "MariusBuescher\\NodeComposer\\NodeComposerPlugin"
+    }
+}
