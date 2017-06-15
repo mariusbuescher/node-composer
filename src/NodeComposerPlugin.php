@@ -85,6 +85,16 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
             $nodeInstaller->install($this->config->getNodeVersion());
 
             $this->io->write('');
+
+            $installedNodeVersion = $nodeInstaller->isInstalled();
+            if (strpos($installedNodeVersion, 'v' . $this->config->getNodeVersion()) === false) {
+                throw new \RuntimeException('Could not verify node.js installation');
+            } else {
+                $this->io->write(sprintf(
+                    'node.js v%s installed',
+                    $this->config->getNodeVersion()
+                ));
+            }
         }
 
         if ($this->config->getYarnVersion() !== null) {
@@ -105,6 +115,16 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
                 ));
 
                 $yarnInstaller->install($this->config->getYarnVersion());
+
+                $installedYarnVersion = $yarnInstaller->isInstalled();
+                if (strpos($installedYarnVersion, $this->config->getYarnVersion()) === false) {
+                    throw new \RuntimeException('Could not verify yarn version');
+                } else {
+                    $this->io->write(sprintf(
+                        'node.js v%s installed',
+                        $this->config->getNodeVersion()
+                    ));
+                }
             }
         }
     }
