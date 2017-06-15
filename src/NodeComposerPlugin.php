@@ -83,14 +83,12 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
             ));
 
             $nodeInstaller->install($this->config->getNodeVersion());
-
-            $this->io->write('');
-
+            
             $installedNodeVersion = $nodeInstaller->isInstalled();
             if (strpos($installedNodeVersion, 'v' . $this->config->getNodeVersion()) === false) {
                 throw new \RuntimeException('Could not verify node.js installation');
             } else {
-                $this->io->write(sprintf(
+                $this->io->overwrite(sprintf(
                     'node.js v%s installed',
                     $this->config->getNodeVersion()
                 ));
