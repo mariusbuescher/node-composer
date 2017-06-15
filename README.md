@@ -41,3 +41,32 @@ Example composer.json
     }
 }
 ```
+
+## Configuration
+
+There are three parameters you can configure: The node version (`node-version`), the yarn version (`yarn-version`) and
+the download url template for the node.js binary archives (`node-download-url`).
+
+In the node download url the following parameters are replaced:
+
+- version: `${version}`
+- type of your os: `${osType}`
+- system architecture: `${architecture}`
+- file format `${format}`
+
+Example composer.json: 
+
+```json
+{
+    // ...
+    "extra": {
+        "mariusbuescher": {
+            "node-composer": {
+                "node-version": "6.11.0",
+                "yarn-version": "0.24.5",
+                "node-download-url": "https://nodejs.org/dist/v${version}/node-v${version}-${osType}-${architecture}.${format}"
+            }
+        }
+    }
+}
+```

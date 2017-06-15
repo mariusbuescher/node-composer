@@ -67,7 +67,8 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
         $nodeInstaller = new NodeInstaller(
             $this->io,
             new RemoteFilesystem($this->io, $this->composer->getConfig()),
-            $context
+            $context,
+            $this->config->getNodeDownloadUrl()
         );
 
         $installedNodeVersion = $nodeInstaller->isInstalled();

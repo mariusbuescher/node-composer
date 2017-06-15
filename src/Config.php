@@ -17,6 +17,11 @@ class Config
     private $yarnVersion;
 
     /**
+     * @var string
+     */
+    private $nodeDownloadUrl;
+
+    /**
      * Config constructor.
      */
     private function __construct()
@@ -32,6 +37,7 @@ class Config
         $self = new self();
 
         $self->nodeVersion = $conf['node-version'];
+        $self->nodeDownloadUrl = isset($conf['node-download-url']) ? $conf['node-download-url'] : null;
         $self->yarnVersion = isset($conf['yarn-version']) ? $conf['yarn-version'] : null;
 
         if ($self->nodeVersion === null) {
@@ -56,5 +62,13 @@ class Config
     public function getYarnVersion()
     {
         return $this->yarnVersion;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNodeDownloadUrl()
+    {
+        return $this->nodeDownloadUrl;
     }
 }
