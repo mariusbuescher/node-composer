@@ -77,7 +77,14 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
             $installedNodeVersion === false ||
             strpos($installedNodeVersion, 'v' . $this->config->getNodeVersion()) === false
         ) {
+            $this->io->write(sprintf(
+                'Installing node.js v%s',
+                $this->config->getNodeVersion()
+            ));
+
             $nodeInstaller->install($this->config->getNodeVersion());
+
+            $this->io->write('');
         }
 
         if ($this->config->getYarnVersion() !== null) {
@@ -92,6 +99,11 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
                 $installedYarnVersion === false ||
                 strpos($installedYarnVersion, $this->config->getYarnVersion()) === false
             ) {
+                $this->io->write(sprintf(
+                    'Installing yarn v%s',
+                    $this->config->getYarnVersion()
+                ));
+
                 $yarnInstaller->install($this->config->getYarnVersion());
             }
         }
