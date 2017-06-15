@@ -7,6 +7,7 @@ use Composer\Util\RemoteFilesystem;
 use MariusBuescher\NodeComposer\ArchitectureMap;
 use MariusBuescher\NodeComposer\InstallerInterface;
 use MariusBuescher\NodeComposer\NodeContext;
+use Symfony\Component\Process\Process;
 
 class NodeInstaller implements InstallerInterface
 {
@@ -74,14 +75,13 @@ class NodeInstaller implements InstallerInterface
      */
     public function isInstalled()
     {
-        $output = array();
-        $return = null;
-
         $nodeExecutable = $this->context->getBinDir() . DIRECTORY_SEPARATOR . 'node';
 
-        exec("$nodeExecutable --version", $output, $return);
+        $process = new Process("$nodeExecutable --version");
+        $process->run();
 
-        if ($return === 0) {
+        if ($process->isSuccessful()) {
+            $output = explode("\n", $process->getIncrementalOutput());
             return $output[0];
         } else {
             return false;
@@ -185,11 +185,12 @@ class NodeInstaller implements InstallerInterface
      */
     private function untar($source, $targetDir)
     {
-        $output = $return_var = null;
-
-        exec("tar -xvf ".$source." -C ".escapeshellarg($targetDir)." --strip 1", $output, $return_var);
+        $process = new Process(
+            "tar -xvf ".$source." -C ".escapeshellarg($targetDir)." --strip 1"
+        );
+        $process->run();
         
-        if ($return_var !== 0) {
+        if (!$process->isSuccessful()) {
             throw new \RuntimeException(sprintf(
                 'An error occurred while untaring NodeJS (%s) to %s',
                 $source,

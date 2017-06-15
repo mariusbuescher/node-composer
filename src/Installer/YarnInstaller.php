@@ -5,6 +5,7 @@ namespace MariusBuescher\NodeComposer\Installer;
 use Composer\IO\IOInterface;
 use MariusBuescher\NodeComposer\InstallerInterface;
 use MariusBuescher\NodeComposer\NodeContext;
+use Symfony\Component\Process\Process;
 
 class YarnInstaller implements InstallerInterface
 {
@@ -44,15 +45,12 @@ class YarnInstaller implements InstallerInterface
             );
         }
 
-        $output = $return = null;
-
-        exec(
-            $this->context->getBinDir() . DIRECTORY_SEPARATOR . 'npm install --global yarn@' . $version,
-            $output,
-            $return
+        $process = new Process(
+            $this->context->getBinDir() . DIRECTORY_SEPARATOR . 'npm install --global yarn@' . $version
         );
+        $process->run();
 
-        if ($return !== 0) {
+        if (!$process->isSuccessful()) {
             throw new \RuntimeException('Could not install yarn');
         }
 
@@ -65,14 +63,13 @@ class YarnInstaller implements InstallerInterface
 
     public function isInstalled()
     {
-        $output = array();
-        $return = null;
-
         $nodeExecutable = $this->context->getBinDir() . DIRECTORY_SEPARATOR . 'yarn';
 
-        exec("$nodeExecutable --version", $output, $return);
+        $process = new Process("$nodeExecutable --version");
+        $process->run();
 
-        if ($return === 0) {
+        if ($process->isSuccessful()) {
+            $output = explode("\n", $process->getIncrementalOutput());
             return $output[0];
         } else {
             return false;
@@ -109,15 +106,14 @@ class YarnInstaller implements InstallerInterface
      */
     private function getNpmBinaryPath()
     {
-        $output = array();
-        $return = null;
+        $process = new Process($this->context->getBinDir() . DIRECTORY_SEPARATOR . 'npm -g bin');
+        $process->run();
 
-        exec($this->context->getBinDir() . DIRECTORY_SEPARATOR . 'npm -g bin', $output, $return);
-
-        if ($return !== 0) {
+        if (!$process->isSuccessful()) {
             throw new \RuntimeException('npm must be installed');
+        } else {
+            $output = explode("\n", $process->getIncrementalOutput());
+            return $output[0];
         }
-
-        return $output[0];
     }
 }
