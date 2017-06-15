@@ -2,6 +2,14 @@
     "name": "mariusbuescher/node-composer",
     "type": "composer-plugin",
     "license": "MIT",
+    "keywords": [
+        "node.js",
+        "npm",
+        "yarn",
+        "frontend",
+        "javascript"
+    ],
+    "homepage": "https://github.com/mariusbuescher/node-composer",
     "authors": [
         {
             "name": "Marius Büscher",
