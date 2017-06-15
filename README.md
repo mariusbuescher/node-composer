@@ -6,10 +6,10 @@ PHP projects mostly are Web-Applications. Many Web-Applications also need a fron
 modern Web-Development there often a whole build-chain connected to the frontend, so you can compile e.g. your scss, build
 your JavaScript with webpack and optimize your images.
 
-This plugin provides a way to automatically download the right version of node.js and npm as a package. The binaries are
-linked to the bin-directory specified in your composer.json.
+This plugin provides a way to automatically download and installthe right version of node.js, npm and yarn. The binaries
+are linked to the bin-directory specified in your composer.json.
 
-After that your can use node and npm in your scripts.
+After that your can use node, npm and yarn in your composer-scripts.
 
 ## Setup
 
@@ -34,7 +34,8 @@ Example composer.json
     "extra": {
         "mariusbuescher": {
             "node-composer": {
-                "node-version": "4.8.3"
+                "node-version": "4.8.3",
+                "yarn-version": "0.22.0"
             }
         }
     }

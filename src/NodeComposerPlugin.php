@@ -12,6 +12,7 @@ use Composer\Script\ScriptEvents;
 use Composer\Util\RemoteFilesystem;
 use MariusBuescher\NodeComposer\Exception\NodeComposerConfigException;
 use MariusBuescher\NodeComposer\Installer\NodeInstaller;
+use MariusBuescher\NodeComposer\Installer\YarnInstaller;
 
 class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
 {
@@ -69,13 +70,29 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
             $context
         );
 
-        $installedVersion = $nodeInstaller->isInstalled();
+        $installedNodeVersion = $nodeInstaller->isInstalled();
 
         if (
-            $installedVersion === false ||
-            strpos($installedVersion, 'v' . $this->config->getNodeVersion()) === false
+            $installedNodeVersion === false ||
+            strpos($installedNodeVersion, 'v' . $this->config->getNodeVersion()) === false
         ) {
             $nodeInstaller->install($this->config->getNodeVersion());
+        }
+
+        if ($this->config->getYarnVersion() !== null) {
+            $yarnInstaller = new YarnInstaller(
+                $this->io,
+                $context
+            );
+
+            $installedYarnVersion = $yarnInstaller->isInstalled();
+
+            if (
+                $installedYarnVersion === false ||
+                strpos($installedYarnVersion, $this->config->getYarnVersion()) === false
+            ) {
+                $yarnInstaller->install($this->config->getYarnVersion());
+            }
         }
     }
 }
