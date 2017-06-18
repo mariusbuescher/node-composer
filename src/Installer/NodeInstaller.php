@@ -208,7 +208,7 @@ class NodeInstaller implements InstallerInterface
     private function linkExecutables($sourceDir, $targetDir)
     {
         $nodePath = $this->context->getOsType() === 'win' ?
-            realpath($sourceDir . DIRECTORY_SEPARATOR . 'node') :
+            realpath($sourceDir . DIRECTORY_SEPARATOR . 'node.exe') :
             realpath($sourceDir . DIRECTORY_SEPARATOR . 'bin/node');
         $nodeLink = $targetDir . DIRECTORY_SEPARATOR . 'node';
 
