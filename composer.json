@@ -1,6 +1,7 @@
 {
     "name": "mariusbuescher/node-composer",
     "type": "composer-plugin",
+    "description": "Installs composer nodejs or/and npm in vendor/",
     "license": "MIT",
     "keywords": [
         "node.js",
@@ -25,7 +26,7 @@
         "php": ">=5.5.9",
         "composer/composer": "^1.4",
         "composer-plugin-api": "^1.1",
-        "symfony/process": "^2.7 || ^3.0"
+        "symfony/process": "^2.7 || >=3.0"
     },
     "extra": {
         "class": "MariusBuescher\\NodeComposer\\NodeComposerPlugin"
