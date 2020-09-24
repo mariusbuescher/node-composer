@@ -1,0 +1,33 @@
+name: Do automatic release
+
+on:
+  schedule:
+    - cron:  '0 10 * * *'
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking auto code...
+        uses: actions/checkout@v2
+
+      - name: Fetching node version...
+        id: node_version
+        run: echo "::set-output name=tag::$(curl -sL https://api.github.com/repos/nodejs/node/releases/latest | jq -r '.tag_name')"
+
+      - name: Checking if such release already exists
+        id: version_exists
+        run: echo "::set-output name=exists::$((git tag --list | grep ${{ steps.node_version.outputs.tag }} > /dev/null); echo $)"
+
+      - name: Creating release...
+          uses: actions/create-release@v1
+          if: steps.version_exists.outputs.exists > 0
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          with:
+            tag_name: ${{ steps.node_version.outputs.tag }}
+            release_name: Node ${{ steps.node_version.outputs.tag }}
+            body: |
+              Node ${{ steps.node_version.outputs.tag }}
+            draft: false
+            prerelease: false
