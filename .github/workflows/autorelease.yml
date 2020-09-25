@@ -2,7 +2,7 @@ name: Do automatic release
 
 on:
   schedule:
-    - cron:  '*/10 * * * *'
+    - cron:  '10 0 * * *'
 
 jobs:
   do-release:
