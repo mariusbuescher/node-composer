@@ -2,7 +2,7 @@ name: Do automatic release
 
 on:
   schedule:
-    - cron:  '0 */4 * * *'
+    - cron:  '0 */1 * * *'
 
 jobs:
   do-release:
@@ -15,19 +15,17 @@ jobs:
         id: node_version
         run: echo "::set-output name=tag::$(curl -sL https://api.github.com/repos/nodejs/node/releases/latest | jq -r '.tag_name')"
 
-      - name: Checking if such release already exists
-        id: version_exists
-        run: echo "::set-output name=exists::$((git tag --list | grep ${{ steps.node_version.outputs.tag }} > /dev/null); echo $?)"
+      - name: Fetching node last release URL...
+        id: node_url
+        run: echo "::set-output name=url::$(curl -sL https://api.github.com/repos/nodejs/node/releases/latest | jq -r '.html_url')"
 
       - name: Creating release...
         uses: actions/create-release@v1
-        if: steps.version_exists.outputs.exists > 0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
           tag_name: ${{ steps.node_version.outputs.tag }}
           release_name: Node ${{ steps.node_version.outputs.tag }}
           body: |
-            Node ${{ steps.node_version.outputs.tag }}
+            Installs [Node ${{ steps.node_version.outputs.tag }}](${{ steps.node_url.outputs.url }})
           draft: false
           prerelease: false
+        continue-on-error: true
