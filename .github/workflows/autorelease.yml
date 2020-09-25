@@ -2,10 +2,10 @@ name: Do automatic release
 
 on:
   schedule:
-    - cron:  '0 10 * * *'
+    - cron:  '0 */4 * * *'
 
 jobs:
-  get-version:
+  do-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checking auto code...
@@ -17,7 +17,7 @@ jobs:
 
       - name: Checking if such release already exists
         id: version_exists
-        run: echo "::set-output name=exists::$((git tag --list | grep ${{ steps.node_version.outputs.tag }} > /dev/null); echo $)"
+        run: echo "::set-output name=exists::$((git tag --list | grep ${{ steps.node_version.outputs.tag }} > /dev/null); echo $?)"
 
       - name: Creating release...
         uses: actions/create-release@v1
