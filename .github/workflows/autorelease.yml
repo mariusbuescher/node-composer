@@ -11,23 +11,36 @@ jobs:
       - name: Checking auto code...
         uses: actions/checkout@v2
 
-      - name: Fetching node version...
-        id: node_version
-        run: echo "::set-output name=tag::$(curl -sL https://api.github.com/repos/nodejs/node/releases/latest | jq -r '.tag_name')"
+      - name: Fetching last node information...
+        id: last_node_release
+        run: |
+          API_CONTENT=$(curl -sL https://api.github.com/repos/nodejs/node/releases/latest)
+          echo "::set-output name=tag::$(echo "$API_CONTENT" | jq -r '.tag_name')"
+          echo "::set-output name=url::$(echo "$API_CONTENT" | jq -r '.html_url')"
 
-      - name: Fetching node last release URL...
-        id: node_url
-        run: echo "::set-output name=url::$(curl -sL https://api.github.com/repos/nodejs/node/releases/latest | jq -r '.html_url')"
+      - name: Calculating release variant...
+        id: release_variant
+        run: |
+          LAST_RELEASE_TAG=$(git tag -l --sort=-committerdate | grep ^${{ steps.node_version.outputs.tag }} | grep - | head -n 1)
+          VARIANT=$(echo "$LAST_RELEASE_TAG" | cut -f2- -d-)
+          LAST_RELEASE_COMMIT_HASH=$(git show-ref -s $LAST_RELEASE_TAG)
+          if [ "$VARIANT" == "" ]; then
+            VARIANT=1
+          elif [ "$LAST_RELEASE_COMMIT_HASH" == "$GITHUB_SHA" ]; then
+            VARIANT=$(($VARIANT + 1))
+          fi;
+          echo VARIANT=$VARIANT
+          echo "::set-ouput name=variant::$VARIANT"
 
       - name: Creating release...
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.node_version.outputs.tag }}
-          release_name: Node ${{ steps.node_version.outputs.tag }}
+          tag_name: ${{ steps.last_node_release.outputs.tag }}-${{ steps.release_variant.outputs.variant }}
+          release_name: ${{ steps.last_node_release.outputs.tag }}-${{ steps.release_variant.outputs.variant }}
           body: |
-            Installs [Node ${{ steps.node_version.outputs.tag }}](${{ steps.node_url.outputs.url }})
+            Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }})
           draft: false
           prerelease: false
         continue-on-error: true
