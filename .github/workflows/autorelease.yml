@@ -28,10 +28,10 @@ jobs:
             VARIANT=1
           elif [ "$LAST_RELEASE_COMMIT_HASH" == "$GITHUB_SHA" ]; then
             VARIANT=$(($VARIANT + 1))
-          fi;
+          fi
           NEW_TAG_NAME=${{ steps.last_node_release.outputs.tag }}-$VARIANT
-          echo "::set-ouput name=variant::$VARIANT"
-          echo "::set-ouput name=tag::$NEW_TAG_NAME"
+          echo "::set-ouput name=variant::$(echo "$VARIANT")"
+          echo "::set-ouput name=tag::$(echo "$NEW_TAG_NAME")"
 
       - name: Creating release...
         uses: actions/create-release@v1
