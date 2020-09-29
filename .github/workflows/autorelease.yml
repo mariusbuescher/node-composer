@@ -2,7 +2,7 @@ name: Do automatic release
 
 on:
   schedule:
-    - cron:  '10 0 * * *'
+    - cron:  '10 */4 * * *'
 
 jobs:
   do-release:
@@ -29,16 +29,17 @@ jobs:
           elif [ "$LAST_RELEASE_COMMIT_HASH" == "$GITHUB_SHA" ]; then
             VARIANT=$(($VARIANT + 1))
           fi;
-          echo VARIANT=$VARIANT
+          NEW_TAG_NAME=${{ steps.last_node_release.outputs.tag }}-$VARIANT
           echo "::set-ouput name=variant::$VARIANT"
+          echo "::set-ouput name=tag::$NEW_TAG_NAME"
 
       - name: Creating release...
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.last_node_release.outputs.tag }}-${{ steps.release_variant.outputs.variant }}
-          release_name: ${{ steps.last_node_release.outputs.tag }}-${{ steps.release_variant.outputs.variant }}
+          tag_name: ${{ steps.release_variant.outputs.tag }}
+          release_name: ${{ steps.release_variant.outputs.tag }}
           body: |
             Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }})
           draft: false
