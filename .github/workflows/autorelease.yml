@@ -19,16 +19,13 @@ jobs:
           echo "::set-output name=url::$(echo "$API_CONTENT" | jq -r '.html_url')"
 
       - name: Calculating release variant...
-        id: release_variant
+        id: new_release_data
         run: |
           LAST_RELEASE_TAG=$(git tag -l --sort=-committerdate | grep ^${{ steps.node_version.outputs.tag }} | grep - | head -n 1)
           VARIANT=$(echo "$LAST_RELEASE_TAG" | cut -f2- -d-)
           LAST_RELEASE_COMMIT_HASH=$(git show-ref -s $LAST_RELEASE_TAG)
-          if [ "$VARIANT" == "" ]; then
-            VARIANT=1
-          elif [ "$LAST_RELEASE_COMMIT_HASH" == "$GITHUB_SHA" ]; then
-            VARIANT=$(($VARIANT + 1))
-          fi
+          [ "$VARIANT" == "" ] && VARIANT=1
+          [ "$LAST_RELEASE_COMMIT_HASH" == "$GITHUB_SHA" ] && VARIANT=$(($VARIANT + 1))          
           NEW_TAG_NAME=${{ steps.last_node_release.outputs.tag }}-$VARIANT
           echo "::set-ouput name=variant::$(echo "$VARIANT")"
           echo "::set-ouput name=tag::$(echo "$NEW_TAG_NAME")"
@@ -38,10 +35,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.release_variant.outputs.tag }}
-          release_name: ${{ steps.release_variant.outputs.tag }}
+          tag_name: ${{ steps.new_release_data.outputs.tag }}
+          release_name: ${{ steps.new_release_data.outputs.tag }}
           body: |
-            Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }})
+            Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }}). Installer build #${{ steps.new_release_data.outputs.variant }}
           draft: false
           prerelease: false
         continue-on-error: true
