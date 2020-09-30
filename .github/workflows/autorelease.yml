@@ -26,13 +26,13 @@ jobs:
           LAST_RELEASE_COMMIT_HASH=$(git show-ref -s $LAST_RELEASE_TAG)
           NEWLINE=$'\n'
           NEW_RELEASE_MESSAGE="Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }})"
-          NEW_RELEASE_MESSAGE="${NEWLINE}Installer build #${{ steps.new_release_data.outputs.variant }}"
+          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE}${NEWLINE}Installer build #${{ steps.new_release_data.outputs.variant }}"
           if [ "$VARIANT" == "" ]; then
             VARIANT=1
           elif [ "$LAST_RELEASE_COMMIT_HASH" != "$GITHUB_SHA" ]; then
             VARIANT=$(($VARIANT + 1))
             CHANGES_BETWEEN_COMMITS=$(git log --oneline $LAST_RELEASE_COMMIT_HASH..HEAD | grep -v Merge | while read line ; do echo " * $line" ; done)
-            NEW_RELEASE_MESSAGE="${NEWLINE}${NEWLINE}Installer changes:${NEWLINE}"
+            NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE}${NEWLINE}${NEWLINE}Installer changes:${NEWLINE}${CHANGES_BETWEEN_COMMITS}"
           fi
           NEW_TAG_NAME=${{ steps.last_node_release.outputs.tag }}-$VARIANT
           echo "::set-output name=variant::$VARIANT"
