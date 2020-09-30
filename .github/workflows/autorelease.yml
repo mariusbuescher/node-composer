@@ -2,7 +2,7 @@ name: Do automatic release
 
 on:
   schedule:
-    - cron:  '10 */4 * * *'
+    - cron:  '10 */2 * * *'
 
 jobs:
   do-release:
@@ -24,11 +24,20 @@ jobs:
           LAST_RELEASE_TAG=$(git tag -l --sort=-committerdate | grep ^${{ steps.node_version.outputs.tag }} | grep - | head -n 1)
           VARIANT=$(echo "$LAST_RELEASE_TAG" | cut -f2- -d-)
           LAST_RELEASE_COMMIT_HASH=$(git show-ref -s $LAST_RELEASE_TAG)
-          [ "$VARIANT" == "" ] && VARIANT=1
-          [ "$LAST_RELEASE_COMMIT_HASH" == "$GITHUB_SHA" ] && VARIANT=$(($VARIANT + 1))          
+          NEWLINE=$'\n'
+          NEW_RELEASE_MESSAGE="Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }})"
+          NEW_RELEASE_MESSAGE="${NEWLINE}Installer build #${{ steps.new_release_data.outputs.variant }}"
+          if [ "$VARIANT" == "" ]; then
+            VARIANT=1
+          elif [ "$LAST_RELEASE_COMMIT_HASH" != "$GITHUB_SHA" ]; then
+            VARIANT=$(($VARIANT + 1))
+            CHANGES_BETWEEN_COMMITS=$(git log --oneline $LAST_RELEASE_COMMIT_HASH..HEAD | grep -v Merge | while read line ; do echo " * $line" ; done)
+            NEW_RELEASE_MESSAGE="${NEWLINE}${NEWLINE}Installer changes:${NEWLINE}"
+          fi
           NEW_TAG_NAME=${{ steps.last_node_release.outputs.tag }}-$VARIANT
-          echo "::set-ouput name=variant::$(echo "$VARIANT")"
-          echo "::set-ouput name=tag::$(echo "$NEW_TAG_NAME")"
+          echo "::set-output name=variant::$VARIANT"
+          echo "::set-output name=tag::$NEW_TAG_NAME"
+          echo "::set-output name=release_info::$NEW_RELEASE_MESSAGE"
 
       - name: Creating release...
         uses: actions/create-release@v1
@@ -37,8 +46,7 @@ jobs:
         with:
           tag_name: ${{ steps.new_release_data.outputs.tag }}
           release_name: ${{ steps.new_release_data.outputs.tag }}
-          body: |
-            Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }}). Installer build #${{ steps.new_release_data.outputs.variant }}
+          body: ${{ steps.new_release_data.outputs.release_info }}
           draft: false
           prerelease: false
         continue-on-error: true
