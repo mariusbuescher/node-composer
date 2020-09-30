@@ -21,7 +21,10 @@ jobs:
       - name: Calculating release variant...
         id: new_release_data
         run: |
-          LAST_RELEASE_TAG=$(git tag -l --sort=-committerdate | grep ^${{ steps.node_version.outputs.tag }} | grep - | head -n 1)
+          ALL_RELEASES=$(git tag -l --sort=-committerdate | grep ^${{ steps.node_version.outputs.tag }})
+          LAST_RELEASE_TAG=$(echo "$ALL_RELEASES" | grep - | head -n 1)
+          echo "ALL: $ALL_RELEASES"
+          echo "LAST: $LAST_RELEASE_TAG"
           VARIANT=$(echo "$LAST_RELEASE_TAG" | cut -f2- -d-)
           LAST_RELEASE_COMMIT_HASH=$(git show-ref -s $LAST_RELEASE_TAG)
           NEWLINE=$'\n'
