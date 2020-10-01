@@ -21,7 +21,7 @@ jobs:
       - name: Calculating release variant...
         id: new_release_data
         run: |
-          ALL_RELEASES=$(git tag -l --sort=-committerdate | grep ^${{ steps.node_version.outputs.tag }})
+          ALL_RELEASES=$(git tag -l --sort=-committerdate | grep ^${{ steps.last_node_release.outputs.tag }})
           LAST_RELEASE_TAG=$(echo "$ALL_RELEASES" | grep - | head -n 1)
           echo "ALL: $ALL_RELEASES"
           echo "LAST: $LAST_RELEASE_TAG"
