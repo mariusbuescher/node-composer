@@ -18,38 +18,64 @@ jobs:
           echo "::set-output name=tag::$(echo "$API_CONTENT" | jq -r '.tag_name')"
           echo "::set-output name=url::$(echo "$API_CONTENT" | jq -r '.html_url')"
 
-      - name: Calculating release variant...
-        id: new_release_data
+      - name: Getting last similar release tag...
+        id: similar_release_tag
         run: |
-          ALL_RELEASES=$(git tag -l --sort=-committerdate | grep ^${{ steps.last_node_release.outputs.tag }})
-          LAST_RELEASE_TAG=$(echo "$ALL_RELEASES" | grep - | head -n 1)
-          echo "ALL: $ALL_RELEASES"
-          echo "LAST: $LAST_RELEASE_TAG"
-          VARIANT=$(echo "$LAST_RELEASE_TAG" | cut -f2- -d-)
-          LAST_RELEASE_COMMIT_HASH=$(git show-ref -s $LAST_RELEASE_TAG)
+          echo "::set-output name=value::$(git tag -l --sort=-committerdate | grep ^${{ steps.last_node_release.outputs.tag }} | grep - | head -n 1)"
+
+      - name: Getting last similar release hash...
+        id: similar_release_hash
+        run: |
+          if [ "${{ steps.similar_release_tag.outputs.value }}" == "" ]; then
+             echo "::set-output name=value::"
+          else
+             echo "::set-output name=value::$(git show-ref -s ${{ steps.similar_release_tag.outputs.value }})"
+          fi;
+
+      - name: Calculating last release variant...
+        id: last_release_variant
+        run: |
+          echo "::set-output name=value::$(echo '${{ steps.similar_release_tag.outputs.value }}' | cut -f2- -d-"
+          
+      - name: Calculating new release variant...
+        id: new_release_variant
+        run: |
+          VARIANT='${{ steps.last_release_variant.outputs.value }}'
+          if [ "$VARIANT" == "" ]; then
+             VARIANT=1
+          elif [ "${{ steps.similar_release_hash.outputs.value }}" != "$GITHUB_SHA" ]; then
+             VARIANT=$(($VARIANT + 1))
+          fi;
+          echo "::set-output name=value::$VARIANT"
+          
+      - name: Generating release message...
+        id: new_release_msg
+        run: |
           NEWLINE=$'\n'
           NEW_RELEASE_MESSAGE="Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }})"
-          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE}${NEWLINE}Installer build #${{ steps.new_release_data.outputs.variant }}"
-          if [ "$VARIANT" == "" ]; then
-            VARIANT=1
-          elif [ "$LAST_RELEASE_COMMIT_HASH" != "$GITHUB_SHA" ]; then
-            VARIANT=$(($VARIANT + 1))
-            CHANGES_BETWEEN_COMMITS=$(git log --oneline $LAST_RELEASE_COMMIT_HASH..HEAD | grep -v Merge | while read line ; do echo " * $line" ; done)
+          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE}${NEWLINE}Installer build #${{ steps.new_release_variant.outputs.value }}"
+          if [ "${{ steps.new_release_variant.outputs.value }}" != "1" ]; then
+            CHANGES_BETWEEN_COMMITS=$(git log --oneline ${{ steps.similar_release_hash.outputs.value }}..HEAD | grep -v Merge | while read line ; do echo " * $line" ; done)
             NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE}${NEWLINE}${NEWLINE}Installer changes:${NEWLINE}${CHANGES_BETWEEN_COMMITS}"
-          fi
-          NEW_TAG_NAME=${{ steps.last_node_release.outputs.tag }}-$VARIANT
-          echo "::set-output name=variant::$VARIANT"
-          echo "::set-output name=tag::$NEW_TAG_NAME"
-          echo "::set-output name=release_info::$NEW_RELEASE_MESSAGE"
+          fi;
+          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE//'%'/'%25'}"
+          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE//$'\n'/'%0A'}"
+          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE//$'\r'/'%0D'}
+          echo "::set-output name=value::$NEW_RELEASE_MESSAGE"
+         
+      - name: Calculating new release tag...
+        id: new_release_tag
+        run: |                    
+          echo "::set-output name=value::${{ steps.last_node_release.outputs.tag }}-{{ steps.new_release_variant.outputs.value }}"
 
       - name: Creating release...
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.new_release_data.outputs.tag }}
-          release_name: ${{ steps.new_release_data.outputs.tag }}
-          body: ${{ steps.new_release_data.outputs.release_info }}
+          tag_name: ${{ steps.new_release_tag.outputs.value }}
+          release_name: ${{ steps.new_release_tag.outputs.value }}
+          body: ${{ steps.new_release_msg.outputs.value }}
           draft: false
           prerelease: false
         continue-on-error: true
