@@ -46,6 +46,8 @@ jobs:
           VARIANT='${{ steps.last_release_variant.outputs.value }}'
           if [ "$VARIANT" == "" ]; then
              VARIANT=1
+          elif [ "${{ steps.last_node_release.outputs.tag }}" == "${{ steps.similar_release_tag.outputs.value }}" ]; then
+             VARIANT=1
           elif [ "${{ steps.similar_release_hash.outputs.value }}" != "$GITHUB_SHA" ]; then
              VARIANT=$(($VARIANT + 1))
           fi;
