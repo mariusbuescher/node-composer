@@ -10,6 +10,9 @@ jobs:
     steps:
       - name: Checking auto code...
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
 
       - name: Fetching last node information...
         id: last_node_release
