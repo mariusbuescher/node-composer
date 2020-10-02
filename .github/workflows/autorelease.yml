@@ -71,7 +71,7 @@ jobs:
       - name: Calculating new release tag...
         id: new_release_tag
         run: |                    
-          echo "::set-output name=value::${{ steps.last_node_release.outputs.tag }}-{{ steps.new_release_variant.outputs.value }}"
+          echo "::set-output name=value::${{ steps.last_node_release.outputs.tag }}-${{ steps.new_release_variant.outputs.value }}"
 
       - name: Creating release...
         uses: actions/create-release@v1
