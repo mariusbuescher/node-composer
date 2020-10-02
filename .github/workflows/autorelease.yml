@@ -65,7 +65,7 @@ jobs:
           fi;
           NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE//'%'/'%25'}"
           NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE//$'\n'/'%0A'}"
-          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE//$'\r'/'%0D'}
+          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE//$'\r'/'%0D'}"
           echo "::set-output name=value::$NEW_RELEASE_MESSAGE"
          
       - name: Calculating new release tag...
