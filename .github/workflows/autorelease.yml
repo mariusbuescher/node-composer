@@ -58,7 +58,7 @@ jobs:
         run: |
           NEWLINE=$'\n'
           NEW_RELEASE_MESSAGE="Installs [Node ${{ steps.last_node_release.outputs.tag }}](${{ steps.last_node_release.outputs.url }})"
-          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE}${NEWLINE}Installer build #${{ steps.new_release_variant.outputs.value }}"
+          NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE}${NEWLINE}Installer build is ${{ steps.new_release_variant.outputs.value }}"
           if [ "${{ steps.new_release_variant.outputs.value }}" != "1" ]; then
             CHANGES_BETWEEN_COMMITS=$(git log --oneline ${{ steps.similar_release_hash.outputs.value }}..HEAD | grep -v Merge | while read line ; do echo " * $line" ; done)
             NEW_RELEASE_MESSAGE="${NEW_RELEASE_MESSAGE}${NEWLINE}${NEWLINE}Installer changes:${NEWLINE}${CHANGES_BETWEEN_COMMITS}"
