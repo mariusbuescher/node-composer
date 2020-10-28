@@ -38,9 +38,21 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
 
         $extraConfig = $this->composer->getPackage()->getExtra();
 
-        if (!isset($extraConfig['mariusbuescher']['node-composer'])) {
-            throw new NodeComposerConfigException('You must configure the node composer plugin');
-        }
+		if (!isset($extraConfig['mariusbuescher']['node-composer'])) {
+			if (!isset($extraConfig['mariusbuescher'])) {
+				$extraConfig['mariusbuescher'] = [];
+			}
+			$extraConfig['mariusbuescher']['node-composer'] = [
+				'node-version' => explode(
+					'-',
+					$composer->getRepositoryManager()->getLocalRepository()->findPackage('mariusbuescher/node-composer', '*')->getVersion(),
+					2
+				)[0]
+			];
+			if (strpos($extraConfig['mariusbuescher']['node-composer']['node-version'], 'dev') === 0) {
+				throw new NodeComposerConfigException('You must configure the node composer plugin');
+			}
+		}
 
         $this->config = Config::fromArray($extraConfig['mariusbuescher']['node-composer']);
     }
