@@ -24,8 +24,8 @@
     },
     "require": {
         "php": ">=5.5.9",
-        "composer/composer": "^1.4",
-        "composer-plugin-api": "^1.1",
+        "composer/composer": "^1.4 || ^2.0",
+        "composer-plugin-api": "^1.0 || ^2.0",
         "symfony/process": "^2.7 || >=3.0"
     },
     "extra": {
