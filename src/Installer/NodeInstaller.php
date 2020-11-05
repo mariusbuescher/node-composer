@@ -6,6 +6,7 @@ use Composer\Installer\BinaryInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
 use Composer\Util\RemoteFilesystem;
+use InvalidArgumentException;
 use MariusBuescher\NodeComposer\ArchitectureMap;
 use MariusBuescher\NodeComposer\BinLinker;
 use MariusBuescher\NodeComposer\InstallerInterface;
@@ -57,14 +58,14 @@ class NodeInstaller implements InstallerInterface
 
     /**
      * @param string $version
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return bool
      */
     public function install($version)
     {
         if (!is_string($version)) {
-            throw new \InvalidArgumentException(
-                sprintf('Version must be a string, %s given'), gettype($version)
+            throw new InvalidArgumentException(
+                sprintf('Version must be a string, %s given', gettype($version))
             );
         }
 

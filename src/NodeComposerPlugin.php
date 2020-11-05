@@ -10,6 +10,7 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\RemoteFilesystem;
+use MariusBuescher\NodeComposer\Exception\VersionVerificationException;
 use MariusBuescher\NodeComposer\Exception\NodeComposerConfigException;
 use MariusBuescher\NodeComposer\Installer\NodeInstaller;
 use MariusBuescher\NodeComposer\Installer\YarnInstaller;
@@ -86,7 +87,8 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
 
             $installedNodeVersion = $nodeInstaller->isInstalled();
             if (strpos($installedNodeVersion, 'v' . $this->config->getNodeVersion()) === false) {
-                throw new \RuntimeException('Could not verify node.js installation');
+                $this->io->write(array_merge(['Bin files:'], glob($context->getBinDir() . '/*.*')), true, IOInterface::VERBOSE);
+                throw new VersionVerificationException('nodejs', $this->config->getNodeVersion(), $installedNodeVersion);
             } else {
                 $this->io->overwrite(sprintf(
                     'node.js v%s installed',
@@ -116,7 +118,8 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
 
                 $installedYarnVersion = $yarnInstaller->isInstalled();
                 if (strpos($installedYarnVersion, $this->config->getYarnVersion()) === false) {
-                    throw new \RuntimeException('Could not verify yarn version');
+                    $this->io->write(array_merge(['Bin files:'], glob($context->getBinDir() . '/*.*')), true, IOInterface::VERBOSE);
+                    throw new VersionVerificationException('yarn', $this->config->getYarnVersion(), $installedYarnVersion);
                 } else {
                     $this->io->write(sprintf(
                         'node.js v%s installed',
@@ -125,5 +128,19 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
                 }
             }
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
     }
 }
