@@ -19,6 +19,7 @@ class ArchitectureMap
      */
     public static function getNodeArchitecture($phpArchitecture)
     {
-        return isset(static::$map[$phpArchitecture]) ? static::$map[$phpArchitecture] : $phpArchitecture;
+        $lowercaseArchitecture = strtolower($phpArchitecture);
+        return isset(static::$map[$lowercaseArchitecture]) ? static::$map[$lowercaseArchitecture] : $phpArchitecture;
     }
 }
