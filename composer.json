@@ -23,7 +23,7 @@
         }
     },
     "require": {
-        "php": ">=5.5.9",
+        "php": ">=7.1",
         "composer/composer": "^1.4",
         "composer-plugin-api": "^1.1",
         "symfony/process": "^2.7 || >=3.0"
