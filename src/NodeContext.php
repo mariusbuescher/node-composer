@@ -41,7 +41,10 @@ class NodeContext
         $this->vendorDir = $vendorDir;
         $this->binDir = $binDir;
 
-        $this->osType = is_string($osType) ? $osType : php_uname('s');
+        $this->osType = $osType;
+        if (!$this->osType) {
+            $this->osType = stripos(PHP_OS, 'WIN') === 0 ? 'win' : strtolower(PHP_OS);
+        }
         $this->systemArchitecture = is_string($systemArchitecture) ? $systemArchitecture : php_uname('m');
     }
 
