@@ -3,6 +3,7 @@
 namespace MariusBuescher\NodeComposer\Installer;
 
 use Composer\IO\IOInterface;
+use InvalidArgumentException;
 use MariusBuescher\NodeComposer\InstallerInterface;
 use MariusBuescher\NodeComposer\NodeContext;
 use Symfony\Component\Process\Process;
@@ -34,14 +35,14 @@ class YarnInstaller implements InstallerInterface
 
     /**
      * @param string $version
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return bool
      */
     public function install($version)
     {
         if (!is_string($version)) {
-            throw new \InvalidArgumentException(
-                sprintf('Version must be a string, %s given'), gettype($version)
+            throw new InvalidArgumentException(
+                sprintf('Version must be a string, %s given', gettype($version))
             );
         }
 
