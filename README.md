@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/packagist/l/mariusbuescher/node-composer)](LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mariusbuescher/node-composer)](https://packagist.org/packages/mariusbuescher/node-composer) [![Tests](https://github.com/mariusbuescher/node-composer/workflows/Tests/badge.svg?branch=master)](https://github.com/mariusbuescher/node-composer/actions?query=workflow%3ATests)
+
 # node-composer
 
 > composer plugin for a better frontend setup
