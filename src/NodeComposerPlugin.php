@@ -6,6 +6,7 @@ namespace MariusBuescher\NodeComposer;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
+use Composer\Package\CompletePackage;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
@@ -36,14 +37,15 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
     {
         $this->composer = $composer;
         $this->io = $io;
+        $this->config = $this->findBestConfig();
 
-        $extraConfig = $this->composer->getPackage()->getExtra();
-
-        if (!isset($extraConfig['mariusbuescher']['node-composer'])) {
+        if ($this->config === null) {
             throw new NodeComposerConfigException('You must configure the node composer plugin');
         }
 
-        $this->config = Config::fromArray($extraConfig['mariusbuescher']['node-composer']);
+        if ($this->config->getNodeVersion() === null) {
+            throw new NodeComposerConfigException('You must specify a node-version');
+        }
     }
 
     public static function getSubscribedEvents()
@@ -142,5 +144,33 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
      */
     public function uninstall(Composer $composer, IOInterface $io)
     {
+    }
+
+    /**
+     * Find best node config to use from all package tree
+     *
+     * @return Config|null
+     */
+    protected function findBestConfig() {
+        $extraConfig = $this->composer->getPackage()->getExtra();
+
+        if (isset($extraConfig['mariusbuescher']['node-composer'])) {
+            return Config::fromArray($extraConfig['mariusbuescher']['node-composer']);
+        }
+
+        $configs = [];
+        /**
+         * @var CompletePackage $package
+         */
+        foreach ($this->composer->getRepositoryManager()->getLocalRepository()->getPackages() as $package) {
+            $extraConfig = $package->getExtra();
+            if (isset($extraConfig['mariusbuescher']['node-composer'])) {
+                $config[] = Config::fromArray($extraConfig['mariusbuescher']['node-composer']);
+            }
+        }
+        if (empty($configs)) {
+            return null;
+        }
+        return Config::selectBest($configs);
     }
 }
