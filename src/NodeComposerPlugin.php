@@ -38,12 +38,26 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
         $this->io = $io;
 
         $extraConfig = $this->composer->getPackage()->getExtra();
+        $packageConfig = $extraConfig['mariusbuescher']['node-composer'] ?? [];
 
-        if (!isset($extraConfig['mariusbuescher']['node-composer'])) {
+        $this->updateConfigFromPackageProvidesConfig(
+            $packageConfig,
+            'node-version',
+            'imponeer/composer-nodejs-installer',
+            'nodejs'
+        );
+        $this->updateConfigFromPackageProvidesConfig(
+            $packageConfig,
+            'yarn-version',
+            'imponeer/composer-yarn-installer',
+            'yarn'
+        );
+
+        if (empty($packageConfig)) {
             throw new NodeComposerConfigException('You must configure the node composer plugin');
         }
 
-        $this->config = Config::fromArray($extraConfig['mariusbuescher']['node-composer']);
+        $this->config = Config::fromArray($packageConfig);
     }
 
     public static function getSubscribedEvents()
@@ -142,5 +156,22 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
      */
     public function uninstall(Composer $composer, IOInterface $io)
     {
+    }
+
+    /**
+     * Updates local config with data from some specific packages
+     *
+     * @param array $config Local config for the update
+     * @param string $configKey Local config key that will be updated if specific package will be found
+     * @param string $packageName Package name from where to fetch provides section data
+     * @param string $providesName Provides key name
+     */
+    protected function updateConfigFromPackageProvidesConfig(array &$config, $configKey, $packageName, $providesName)
+    {
+        $foundPackages = $this->composer->getRepositoryManager()->getLocalRepository()->findPackages($packageName);
+        if (isset($foundPackages[0])) {
+            $provides = $foundPackages[0]->getProvides();
+            $config[$configKey] = $provides[$providesName]->getPrettyConstraint();
+        }
     }
 }
