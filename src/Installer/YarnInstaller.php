@@ -4,6 +4,7 @@ namespace MariusBuescher\NodeComposer\Installer;
 
 use Composer\IO\IOInterface;
 use InvalidArgumentException;
+use MariusBuescher\NodeComposer\BinLinker;
 use MariusBuescher\NodeComposer\InstallerInterface;
 use MariusBuescher\NodeComposer\NodeContext;
 use Symfony\Component\Process\Process;
@@ -47,15 +48,25 @@ class YarnInstaller implements InstallerInterface
         }
 
         $process = new Process(
-            $this->context->getBinDir() . DIRECTORY_SEPARATOR . 'npm install --global yarn@' . $version
+            'npm install --global yarn@' . $version,
+            $this->context->getBinDir()
         );
-        $process->run();
+        $process->setIdleTimeout(null);
+        $process->setTimeout(null);
+        $process->run(function ($type, $buffer) {
+            if (Process::ERR === $type) {
+                $this->io->writeError($buffer, true, IOInterface::DEBUG);
+            } else {
+                $this->io->write($buffer, true, IOInterface::DEBUG);
+            }
+        });
 
         if (!$process->isSuccessful()) {
             throw new \RuntimeException('Could not install yarn');
         }
 
         $sourceDir = $this->getNpmBinaryPath();
+        $this->io->write('NPM found at: ' . $sourceDir, true, IOInterface::VERBOSE);
 
         $this->linkExecutables($sourceDir, $this->context->getBinDir());
 
@@ -64,9 +75,9 @@ class YarnInstaller implements InstallerInterface
 
     public function isInstalled()
     {
-        $nodeExecutable = $this->context->getBinDir() . DIRECTORY_SEPARATOR . 'yarn';
-
-        $process = new Process("$nodeExecutable --version");
+        $process = new Process("yarn --version", $this->context->getBinDir());
+        $process->setIdleTimeout(null);
+        $process->setTimeout(null);
         $process->run();
 
         if ($process->isSuccessful()) {
@@ -83,23 +94,25 @@ class YarnInstaller implements InstallerInterface
      */
     private function linkExecutables($sourceDir, $targetDir)
     {
-        $yarnPath = realpath($sourceDir . DIRECTORY_SEPARATOR . 'yarn');
+        $yarnPath = $this->context->getOsType() === 'win' ?
+            realpath($sourceDir . DIRECTORY_SEPARATOR . 'yarn.cmd') :
+            realpath($sourceDir . DIRECTORY_SEPARATOR . 'yarn');
         $yarnLink = $targetDir . DIRECTORY_SEPARATOR . 'yarn';
 
-        if (realpath($yarnLink)) {
-            unlink($yarnLink);
-        }
+        $fs = new BinLinker(
+            $this->context->getBinDir(),
+            $this->context->getOsType()
+        );
+        $fs->unlinkBin($yarnLink);
+        $fs->linkBin($yarnPath, $yarnLink);
 
-        symlink($yarnPath, $yarnLink);
-
-        $yarnpkgPath = realpath($sourceDir . DIRECTORY_SEPARATOR . 'yarnpkg');
+        $yarnpkgPath = $this->context->getOsType() === 'win' ?
+            realpath($sourceDir . DIRECTORY_SEPARATOR . 'yarnpkg.cmd') :
+            realpath($sourceDir . DIRECTORY_SEPARATOR . 'yarnpkg');
         $yarnpkgLink = $targetDir . DIRECTORY_SEPARATOR . 'yarnpkg';
 
-        if (realpath($yarnpkgLink)) {
-            unlink($yarnpkgLink);
-        }
-
-        symlink($yarnpkgPath, $yarnpkgLink);
+        $fs->unlinkBin($yarnpkgLink);
+        $fs->linkBin($yarnpkgPath, $yarnpkgLink);
     }
 
     /**
@@ -107,7 +120,7 @@ class YarnInstaller implements InstallerInterface
      */
     private function getNpmBinaryPath()
     {
-        $process = new Process($this->context->getBinDir() . DIRECTORY_SEPARATOR . 'npm -g bin');
+        $process = new Process('npm -g bin', $this->context->getBinDir());
         $process->run();
 
         if (!$process->isSuccessful()) {

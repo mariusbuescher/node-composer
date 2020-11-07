@@ -2,10 +2,13 @@
 
 namespace MariusBuescher\NodeComposer\Installer;
 
+use Composer\Installer\BinaryInstaller;
 use Composer\IO\IOInterface;
+use Composer\Package\Package;
 use Composer\Util\RemoteFilesystem;
 use InvalidArgumentException;
 use MariusBuescher\NodeComposer\ArchitectureMap;
+use MariusBuescher\NodeComposer\BinLinker;
 use MariusBuescher\NodeComposer\InstallerInterface;
 use MariusBuescher\NodeComposer\NodeContext;
 use Symfony\Component\Process\Process;
@@ -113,7 +116,10 @@ class NodeInstaller implements InstallerInterface
 
         $this->unpackExecutable($fileName, $targetPath);
 
-        $this->linkExecutables($targetPath, $this->context->getBinDir());
+        $realNodeInstalledPath = is_dir($targetPath . DIRECTORY_SEPARATOR . basename($targetPath)) ?
+            $targetPath . DIRECTORY_SEPARATOR . basename($targetPath) :
+            $targetPath;
+        $this->linkExecutables($realNodeInstalledPath, $this->context->getBinDir());
     }
 
     /**
@@ -190,7 +196,7 @@ class NodeInstaller implements InstallerInterface
             "tar -xvf ".$source." -C ".escapeshellarg($targetDir)." --strip 1"
         );
         $process->run();
-        
+
         if (!$process->isSuccessful()) {
             throw new \RuntimeException(sprintf(
                 'An error occurred while untaring NodeJS (%s) to %s',
@@ -213,21 +219,19 @@ class NodeInstaller implements InstallerInterface
             realpath($sourceDir . DIRECTORY_SEPARATOR . 'bin/node');
         $nodeLink = $targetDir . DIRECTORY_SEPARATOR . 'node';
 
-        if (realpath($nodeLink)) {
-            unlink($nodeLink);
-        }
-
-        symlink($nodePath, $nodeLink);
+        $fs = new BinLinker(
+            $this->context->getBinDir(),
+            $this->context->getOsType()
+        );
+        $fs->unlinkBin($nodeLink);
+        $fs->linkBin($nodePath, $nodeLink);
 
         $npmPath = $this->context->getOsType() === 'win' ?
-            realpath($sourceDir . DIRECTORY_SEPARATOR . 'npm') :
+            realpath($sourceDir . DIRECTORY_SEPARATOR . 'npm.cmd') :
             realpath($sourceDir . DIRECTORY_SEPARATOR . 'bin/npm');
         $npmLink = $targetDir . DIRECTORY_SEPARATOR . 'npm';
 
-        if (realpath($npmLink)) {
-            unlink($npmLink);
-        }
-
-        symlink($npmPath, $npmLink);
+        $fs->unlinkBin($npmLink);
+        $fs->linkBin($npmPath, $npmLink);
     }
 }
