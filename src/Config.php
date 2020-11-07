@@ -40,12 +40,43 @@ class Config
         $self->nodeDownloadUrl = isset($conf['node-download-url']) ? $conf['node-download-url'] : null;
         $self->yarnVersion = isset($conf['yarn-version']) ? $conf['yarn-version'] : null;
 
-        if ($self->nodeVersion === null) {
-            throw new NodeComposerConfigException('You must specify a node-version');
+        return $self;
+    }
+
+    /**
+     * Selects best config from configs list
+     *
+     * @param Config[] $configs
+     * @return Config
+     */
+    public static function selectBest(array $configs) {
+        $maxNodeVersion = null;
+        $maxYarnVersion = null;
+        $nodeDownloadUrl = null;
+        foreach ($configs as $config) {
+            if ($maxNodeVersion === null) {
+                $maxNodeVersion = $config->nodeVersion;
+            } elseif (version_compare($config->nodeVersion, $maxNodeVersion, '>')) {
+                $maxNodeVersion = $config->nodeVersion;
+            }
+            if ($maxYarnVersion === null) {
+                $maxYarnVersion = $config->yarnVersion;
+            } elseif (version_compare($config->yarnVersion, $maxYarnVersion, '>')) {
+                $maxYarnVersion = $config->yarnVersion;
+            }
+            if ($nodeDownloadUrl === null) {
+                $nodeDownloadUrl = $config->nodeDownloadUrl;
+            } elseif ($nodeDownloadUrl !== $config->nodeDownloadUrl) {
+                throw new NodeComposerConfigException('Defined different nodejs download urls are unsupported right now');
+            }
         }
 
+        $ret = new self();
+        $ret->nodeDownloadUrl = $nodeDownloadUrl;
+        $ret->yarnVersion = $maxYarnVersion;
+        $ret->nodeVersion = $maxNodeVersion;
 
-        return $self;
+        return $ret;
     }
 
     /**
