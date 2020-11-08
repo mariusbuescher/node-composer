@@ -43,13 +43,13 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
         $this->updateConfigFromPackageProvidesConfig(
             $packageConfig,
             'node-version',
-            'imponeer/composer-nodejs-installer',
+            $packageConfig['package-for-node-version'] ?? 'imponeer/composer-nodejs-installer',
             'nodejs/node'
         );
         $this->updateConfigFromPackageProvidesConfig(
             $packageConfig,
             'yarn-version',
-            'imponeer/composer-yarn-installer',
+            $packageConfig['package-for-yarn-version'] ?? 'imponeer/composer-yarn-installer',
             'yarnpkg/yarn'
         );
 
