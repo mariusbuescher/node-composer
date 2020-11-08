@@ -10,8 +10,8 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\RemoteFilesystem;
-use MariusBuescher\NodeComposer\Exception\VersionVerificationException;
 use MariusBuescher\NodeComposer\Exception\NodeComposerConfigException;
+use MariusBuescher\NodeComposer\Exception\VersionVerificationException;
 use MariusBuescher\NodeComposer\Installer\NodeInstaller;
 use MariusBuescher\NodeComposer\Installer\YarnInstaller;
 
@@ -44,13 +44,13 @@ class NodeComposerPlugin implements PluginInterface, EventSubscriberInterface
             $packageConfig,
             'node-version',
             'imponeer/composer-nodejs-installer',
-            'nodejs'
+            'nodejs/node'
         );
         $this->updateConfigFromPackageProvidesConfig(
             $packageConfig,
             'yarn-version',
             'imponeer/composer-yarn-installer',
-            'yarn'
+            'yarnpkg/yarn'
         );
 
         if (empty($packageConfig)) {
