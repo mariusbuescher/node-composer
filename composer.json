@@ -29,6 +29,10 @@
         "symfony/process": "^2.7 || >=3.0",
         "symfony/filesystem": ">=2.7"
     },
+    "suggest": {
+        "imponeer/composer-yarn-installer": "Lets use composer constraints for updating yarn package version",
+        "imponeer/composer-nodejs-installer": "Lets use composer constraints for updating nodejs package version"
+    },
     "extra": {
         "class": "MariusBuescher\\NodeComposer\\NodeComposerPlugin"
     }
